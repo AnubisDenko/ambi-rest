@@ -1,0 +1,9 @@
+{
+  "name": "ambi-rest",
+  "description": "Rest client to control Ambi Climate",
+  "keywords": [
+    "ambi"
+  ],
+  "website": "",
+  "repository": ""
+}
