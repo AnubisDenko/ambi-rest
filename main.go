@@ -18,11 +18,17 @@ func main() {
 	router.Use(gin.Logger())
 
 	router.GET("/", SayHello)
+	router.GET("/secret", ReceiveSecret)
 	router.Run(":" + port)
 }
 
 func SayHello(c *gin.Context){
 	c.String(http.StatusOK, string("Test"))
+}
+
+func ReceiveSecret(c *gin.Context){
+	c.String(http.StatusOK, string("OK"))
+	log.Fatal(c)
 }
 
 
