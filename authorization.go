@@ -25,10 +25,22 @@ func StartAmbiAuthentication(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "provided good info"})
 	log.Println("logging into Ambi")
+	ctx.JSON(http.StatusOK, gin.H{"status": "provided good info"})
+
+	LoginAmbiServer(credentials)
 	log.Println("Sending Request to receive authorization token")
 	SendAuthorizationRequest()
+}
+
+func LoginAmbiServer(credentials login){
+	const ambiLoginUrl = "https://api.ambiclimate.com/login"
+	resp, err := client.PostForm(ambiLoginUrl,url.Values{"email": {credentials.Username}, "password":{credentials.Password}} )
+	if err != nil {
+		log.Fatal("Failed to authentication with Ambi Climate for username", credentials.Username)
+	}
+	PrintBody("LoginAmbiServer", resp.Body)
+
 }
 
 func SendAuthorizationRequest(){
@@ -42,7 +54,7 @@ func SendAuthorizationRequest(){
 	if err != nil {
 		log.Println("Received Error when requesting authorization token", err.Error())
 	}
-	PrintBody(resp.Body)
+	PrintBody("SendAuthorizationRequest", resp.Body)
 }
 
 func AuthorizationTokenCallback(ctx *gin.Context){
@@ -63,13 +75,13 @@ func RequestAccessToken(authorizationToken string){
 	if err != nil {
 		log.Println("Received Error when requesting authorization token", err.Error())
 	}
-	PrintBody(resp.Body)
+	PrintBody("RequestAccessToken", resp.Body)
 }
 
 func ReceiveAccessToken(ctx *gin.Context){
 	var accessToken token
 	if err:= ctx.ShouldBindJSON(&accessToken); err != nil{
-		log.Fatal("Couldn't read access token")
+		log.Fatal("Couldn't read access token:", err.Error())
 	}
 
 	log.Println(accessToken)

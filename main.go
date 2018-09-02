@@ -22,10 +22,10 @@ func main() {
 	router.Run(":" + port)
 }
 
-func PrintBody(body io.ReadCloser){
+func PrintBody(source string, body io.ReadCloser){
 	buf := new (bytes.Buffer)
 	buf.ReadFrom(body)
 	bodyAsString :=buf.String()
 
-	log.Println(bodyAsString)
+	log.Println(source, bodyAsString)
 }
