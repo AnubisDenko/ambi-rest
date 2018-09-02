@@ -11,29 +11,28 @@ import (
 var  tokenRequestUrl = "https://api.ambiclimate.com/oauth2/authorize"
 
 var jar,_ = cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
-var c = &http.Client{Jar: jar}
+var client = &http.Client{Jar: jar}
 
-func StartAmbiAuthentication(c *gin.Context) {
+func StartAmbiAuthentication(ctx *gin.Context) {
 	log.Println("Starting ambi authentication.")
 	log.Println("Reading username and password from login request")
 	var credentials login
-	if err:= c.ShouldBindJSON(&credentials); err != nil{
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No username password provided:" + err.Error()})
+	if err:= ctx.ShouldBindJSON(&credentials); err != nil{
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "No username password provided:" + err.Error()})
 	}
 	if "" == credentials.Username ||  credentials.Password == ""{
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "No credentials provided"})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "No credentials provided"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "provided good info"})
+	ctx.JSON(http.StatusOK, gin.H{"status": "provided good info"})
 	log.Println("logging into Ambi")
 	log.Println("Sending Request to receive authorization token")
 	SendAuthorizationRequest()
 }
 
 func SendAuthorizationRequest(){
-
-	resp, err := c.PostForm(tokenRequestUrl, url.Values{
+	resp, err := client.PostForm(tokenRequestUrl, url.Values{
 		"client_id":{"cHKV"},
 		"scope":{"email device_read ac_control"},
 		"response_type":{"code"},
@@ -46,15 +45,15 @@ func SendAuthorizationRequest(){
 	PrintBody(resp.Body)
 }
 
-func AuthorizationTokenCallback(c *gin.Context){
-	c.String(http.StatusOK, string("OK"))
-	code := c.Query("code")
+func AuthorizationTokenCallback(ctx *gin.Context){
+	ctx.String(http.StatusOK, string("OK"))
+	code := ctx.Query("code")
 	log.Println("Received Code", code)
 	RequestAccessToken(code)
 }
 
 func RequestAccessToken(authorizationToken string){
-	resp, err := c.PostForm(tokenRequestUrl, url.Values{
+	resp, err := client.PostForm(tokenRequestUrl, url.Values{
 		"client_id":{"cHKV"},
 		"redirect_uri": {"https://ambi-rest.herokuapp.com/accessToken"},
 		"code":{authorizationToken},
@@ -67,9 +66,9 @@ func RequestAccessToken(authorizationToken string){
 	PrintBody(resp.Body)
 }
 
-func ReceiveAccessToken(c *gin.Context){
+func ReceiveAccessToken(ctx *gin.Context){
 	var accessToken token
-	if err:= c.ShouldBindJSON(&accessToken); err != nil{
+	if err:= ctx.ShouldBindJSON(&accessToken); err != nil{
 		log.Fatal("Couldn't read access token")
 	}
 
