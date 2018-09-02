@@ -35,11 +35,11 @@ func StartAmbiAuthentication(ctx *gin.Context) {
 
 func LoginAmbiServer(credentials login){
 	const ambiLoginUrl = "https://api.ambiclimate.com/login"
-	resp, err := client.PostForm(ambiLoginUrl,url.Values{"email": {credentials.Username}, "password":{credentials.Password}} )
+	_, err := client.PostForm(ambiLoginUrl,url.Values{"email": {credentials.Username}, "password":{credentials.Password}} )
 	if err != nil {
 		log.Fatal("Failed to authentication with Ambi Climate for username", credentials.Username)
 	}
-	PrintBody("LoginAmbiServer", resp.Body)
+	//PrintBody("LoginAmbiServer", resp.Body)
 
 }
 
@@ -79,11 +79,12 @@ func RequestAccessToken(authorizationToken string){
 }
 
 func ReceiveAccessToken(ctx *gin.Context){
-	var accessToken token
-	if err:= ctx.ShouldBindJSON(&accessToken); err != nil{
-		log.Fatal("Couldn't read access token:", err.Error())
-	}
+	//var accessToken token
+	//if err:= ctx.ShouldBindJSON(&accessToken); err != nil{
+	//	log.Fatal("Couldn't read access token:", err.Error())
+	//}
 
-	log.Println(accessToken)
+	PrintBody("ReceiveAccessToken",ctx.Request.Body)
+	//log.Println(accessToken)
 }
 
