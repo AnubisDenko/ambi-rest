@@ -18,7 +18,6 @@ func main() {
 	router.Use(gin.Logger())
 	router.POST("/login", StartAmbiAuthentication)
 	router.GET("/secret", AuthorizationTokenCallback)
-	router.GET("/accessToken", ReceiveAccessToken)
 	router.Run(":" + port)
 }
 

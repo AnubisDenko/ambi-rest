@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/net/publicsuffix"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
@@ -10,7 +12,6 @@ import (
 	"os"
 	"time"
 )
-var  tokenRequestUrl = "https://api.ambiclimate.com/oauth2/authorize"
 
 var jar,_ = cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
 var client = &http.Client{Jar: jar, Timeout: time.Second * 10,}
@@ -18,6 +19,8 @@ var clientId = os.Getenv("AMBI_CLIENT_ID")
 var clientSecret = os.Getenv("AMBI_CLIENT_SECRET")
 
 const callBackUrl = "https://ambi-rest.herokuapp.com/secret"
+const  authorizationRequestUrl = "https://api.ambiclimate.com/oauth2/authorize"
+const  tokenRequestUrl = "https://api.ambiclimate.com/oauth2/token"
 
 func StartAmbiAuthentication(ctx *gin.Context) {
 	log.Println("Starting ambi authentication.")
@@ -47,13 +50,10 @@ func LoginAmbiServer(credentials login){
 	if err != nil {
 		log.Fatal("Failed to authentication with Ambi Climate for username", credentials.Username)
 	}
-	//PrintBody("LoginAmbiServer", resp.Body)
-
 }
 
 func SendAuthorizationRequest(){
-	resp, err := client.PostForm(tokenRequestUrl, url.Values{
-		//"client_id":{"cHKV"},
+	resp, err := client.PostForm(authorizationRequestUrl, url.Values{
 		"client_id":{clientId},
 		"scope":{"email device_read ac_control"},
 		"response_type":{"code"},
@@ -68,12 +68,17 @@ func SendAuthorizationRequest(){
 
 func AuthorizationTokenCallback(ctx *gin.Context){
 	ctx.String(http.StatusOK, string("OK"))
+	errorCode :=ctx.Query("error")
+	if "" == errorCode {
+
+	}
 	code := ctx.Query("code")
 	log.Println("Received Code", code)
 	RequestAccessToken(code)
 }
 
 func RequestAccessToken(authorizationToken string){
+
 	requestUrl ,_ := url.Parse(tokenRequestUrl)
 	queryUrl := requestUrl.Query()
 	queryUrl.Add("client_id",clientId)
@@ -81,21 +86,26 @@ func RequestAccessToken(authorizationToken string){
 	queryUrl.Add("code",authorizationToken)
 	queryUrl.Add("client_secret",clientSecret)
 	queryUrl.Add("grant_type","authorization_code")
+	requestUrl.RawQuery = queryUrl.Encode()
 
-	resp, err := client.Get(queryUrl.Encode())
+	log.Println(requestUrl.String())
+
+	resp, err := client.Get(requestUrl.String())
 	if err != nil {
 		log.Println("Received Error when requesting authorization token", err.Error())
 	}
-	PrintBody("RequestAccessToken", resp.Body)
+
+	PrintBody("Response Body", resp.Body)
+	temp,err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal("Error while reading json String",err)
+	}
+	log.Println("JSON String", temp)
+
+	var myToken token
+	err = json.Unmarshal(temp, &myToken)
+	if err != nil {
+		log.Fatal("Error while parsing access token",err)
+	}
+	log.Println("Access Token",myToken.AccessToken)
 }
-
-func ReceiveAccessToken(ctx *gin.Context){
-	//var accessToken token
-	//if err:= ctx.ShouldBindJSON(&accessToken); err != nil{
-	//	log.Fatal("Couldn't read access token:", err.Error())
-	//}
-
-	PrintBody("ReceiveAccessToken",ctx.Request.Body)
-	//log.Println(accessToken)
-}
-
