@@ -7,15 +7,23 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"os"
+	"time"
 )
 var  tokenRequestUrl = "https://api.ambiclimate.com/oauth2/authorize"
 
 var jar,_ = cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
-var client = &http.Client{Jar: jar}
+var client = &http.Client{Jar: jar, Timeout: time.Second * 10,}
+var clientId = os.Getenv("client_id")
+var clientSecret = os.Getenv("client_secret")
+
+const callBackUrl = "https://ambi-rest.herokuapp.com/secret"
 
 func StartAmbiAuthentication(ctx *gin.Context) {
 	log.Println("Starting ambi authentication.")
 	log.Println("Reading username and password from login request")
+	log.Println("clientId", clientId, "client_secret", clientSecret)
+	
 	var credentials login
 	if err:= ctx.ShouldBindJSON(&credentials); err != nil{
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "No username password provided:" + err.Error()})
@@ -45,10 +53,11 @@ func LoginAmbiServer(credentials login){
 
 func SendAuthorizationRequest(){
 	resp, err := client.PostForm(tokenRequestUrl, url.Values{
-		"client_id":{"cHKV"},
+		//"client_id":{"cHKV"},
+		"client_id":{clientId},
 		"scope":{"email device_read ac_control"},
 		"response_type":{"code"},
-		"redirect_uri": {"https://ambi-rest.herokuapp.com/secret"},
+		"redirect_uri": {},
 		"confirm": {"yes"}})
 
 	if err != nil {
@@ -65,13 +74,15 @@ func AuthorizationTokenCallback(ctx *gin.Context){
 }
 
 func RequestAccessToken(authorizationToken string){
-	resp, err := client.PostForm(tokenRequestUrl, url.Values{
-		"client_id":{"cHKV"},
-		"redirect_uri": {"https://ambi-rest.herokuapp.com/accessToken"},
-		"code":{authorizationToken},
-		"client_secret":{"9a9p4"},
-		"grant_type": {"authorization_code"}})
+	requestUrl ,_ := url.Parse(tokenRequestUrl)
+	queryUrl := requestUrl.Query()
+	queryUrl.Add("client_id",clientId)
+	queryUrl.Add("redirect_uri",callBackUrl)
+	queryUrl.Add("code",authorizationToken)
+	queryUrl.Add("client_secret",clientSecret)
+	queryUrl.Add("grant_type","authorization_code")
 
+	resp, err := client.Get(queryUrl.Encode())
 	if err != nil {
 		log.Println("Received Error when requesting authorization token", err.Error())
 	}
