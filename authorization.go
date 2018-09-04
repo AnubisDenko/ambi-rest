@@ -14,8 +14,8 @@ var  tokenRequestUrl = "https://api.ambiclimate.com/oauth2/authorize"
 
 var jar,_ = cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
 var client = &http.Client{Jar: jar, Timeout: time.Second * 10,}
-var clientId = os.Getenv("client_id")
-var clientSecret = os.Getenv("client_secret")
+var clientId = os.Getenv("AMBI_CLIENT_ID")
+var clientSecret = os.Getenv("AMBI_CLIENT_SECRET")
 
 const callBackUrl = "https://ambi-rest.herokuapp.com/secret"
 
@@ -23,7 +23,7 @@ func StartAmbiAuthentication(ctx *gin.Context) {
 	log.Println("Starting ambi authentication.")
 	log.Println("Reading username and password from login request")
 	log.Println("clientId", clientId, "client_secret", clientSecret)
-	
+
 	var credentials login
 	if err:= ctx.ShouldBindJSON(&credentials); err != nil{
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "No username password provided:" + err.Error()})
