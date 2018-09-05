@@ -96,10 +96,7 @@ func RequestAccessToken(authorizationToken string){
 	}
 
 	PrintBody("Response Body", resp.Body)
-	temp,err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal("Error while reading json String",err)
-	}
+	temp,_ := ioutil.ReadAll(resp.Body)
 	log.Println("JSON String", temp)
 
 	var myToken token
