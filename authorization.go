@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/net/publicsuffix"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
@@ -95,12 +94,11 @@ func RequestAccessToken(authorizationToken string){
 		log.Println("Received Error when requesting authorization token", err.Error())
 	}
 
-	PrintBody("Response Body", resp.Body)
-	temp,_ := ioutil.ReadAll(resp.Body)
+	temp := GetBody("Body", resp.Body)
 	log.Println("JSON String", temp)
 
 	var myToken token
-	err = json.Unmarshal(temp, &myToken)
+	err = json.Unmarshal([]byte(temp), &myToken)
 	if err != nil {
 		log.Fatal("Error while parsing access token",err)
 	}

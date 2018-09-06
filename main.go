@@ -28,3 +28,11 @@ func PrintBody(source string, body io.ReadCloser){
 
 	log.Println(source, bodyAsString)
 }
+
+func GetBody(source string, body io.ReadCloser) string {
+	buf := new (bytes.Buffer)
+	buf.ReadFrom(body)
+	bodyAsString :=buf.String()
+	log.Println(source, bodyAsString)
+	return bodyAsString
+}
