@@ -12,6 +12,9 @@ func SendRequest(urlString string, device *ambi) (*http.Response, error){
 	queryUrl.Add("room_name", device.Room)
 	queryUrl.Add("location_name", device.Location)
 	queryUrl.Add("multiple", "False")
+	if device.Value != "" {
+		queryUrl.Add("value", device.Value)
+	}
 	requestUrl.RawQuery = queryUrl.Encode()
 
 	log.Println("Starting to send request to", requestUrl.String())
