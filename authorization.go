@@ -24,11 +24,11 @@ const  tokenRequestUrl = "https://api.ambiclimate.com/oauth2/token"
 func StartAmbiAuthentication(ctx *gin.Context) {
 	log.Println("Starting ambi authentication.")
 	log.Println("Reading username and password from login request")
-	log.Println("clientId", clientId, "client_secret", clientSecret)
 
 	var credentials login
 	if err:= ctx.ShouldBindJSON(&credentials); err != nil{
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "No username password provided:" + err.Error()})
+		return
 	}
 	if "" == credentials.Username ||  credentials.Password == ""{
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "No credentials provided"})

@@ -43,7 +43,7 @@ func TemperatureLower(ctx *gin.Context){
 
 func ComfortMode(ctx *gin.Context){
 	log.Println("Calling ComfortMode")
-	comfort := "https://api.ambiclimate.com/api/v1/device/device/mode/comfort"
+	comfort := "https://api.ambiclimate.com/api/v1/device/mode/comfort"
 	HandlePost(ctx, comfort)
 }
 
@@ -70,8 +70,6 @@ func HandlePost(ctx *gin.Context, ambiUrl string){
 	if err:= ctx.ShouldBindJSON(&ambiDevice); err != nil{
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't translate request into JSON"})
 	}
-
-	log.Println("Powering Off", ambiDevice)
 	_, err := SendRequest(ambiUrl, &ambiDevice)
 	if err != nil{
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
