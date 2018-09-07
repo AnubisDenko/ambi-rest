@@ -36,7 +36,7 @@ func StartAmbiAuthentication(ctx *gin.Context) {
 	}
 
 	log.Println("logging into Ambi")
-	ctx.JSON(http.StatusOK, gin.H{"status": "provided good info"})
+	ctx.JSON(http.StatusOK, gin.H{"status": "OK"})
 
 	LoginAmbiServer(credentials)
 	log.Println("Sending Request to receive authorization token")
@@ -52,7 +52,7 @@ func LoginAmbiServer(credentials login){
 }
 
 func SendAuthorizationRequest(){
-	resp, err := client.PostForm(authorizationRequestUrl, url.Values{
+	_, err := client.PostForm(authorizationRequestUrl, url.Values{
 		"client_id":{clientId},
 		"scope":{"email device_read ac_control"},
 		"response_type":{"code"},
@@ -62,7 +62,6 @@ func SendAuthorizationRequest(){
 	if err != nil {
 		log.Println("Received Error when requesting authorization token", err.Error())
 	}
-	PrintBody("SendAuthorizationRequest", resp.Body)
 }
 
 func AuthorizationTokenCallback(ctx *gin.Context){
@@ -102,5 +101,7 @@ func RequestAccessToken(authorizationToken string){
 	if err != nil {
 		log.Fatal("Error while parsing access token",err)
 	}
-	log.Println("Access Token",myToken.AccessToken)
+
+	log.Println("Session has been authenticated. Token expires in", myToken.ExpiresIn)
+	accessToken = myToken
 }

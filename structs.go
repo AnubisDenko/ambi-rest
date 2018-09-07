@@ -12,3 +12,9 @@ type login struct{
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
+
+type ambi struct{
+	Location string `json:"location_name"`
+	Room string `json:"room_name"`
+	Value string `json:"value"`
+}
