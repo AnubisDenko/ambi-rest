@@ -32,6 +32,7 @@ func GetBody(source string, body io.ReadCloser) string {
 	buf.ReadFrom(body)
 	bodyAsString :=buf.String()
 	log.Println(source, bodyAsString)
+	body.Close()
 	return bodyAsString
 }
 
